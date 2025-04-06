@@ -1,6 +1,6 @@
 import boto3
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')  # Change region if needed
+dynamodb = boto3.client('dynamodb', region_name='ap-south-1')  # Change region if needed
 
 table_name = "salesforce_tokens"
 

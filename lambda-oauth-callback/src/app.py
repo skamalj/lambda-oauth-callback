@@ -11,16 +11,16 @@ def lambda_handler(event, context):
     code = qs.get("code")
     state = qs.get("state")  # state is: wa:whatsapp:+1234567890
 
-    if not code or not state or not state.startswith("wa:"):
+    if not code or not state or not state.startswith("profile:"):
         return {
             "statusCode": 400,
             "body": "Invalid request"
         }
 
-    wa_id = state.replace("wa:", "")
+    profile_id = state.replace("profile:", "")
 
     # Exchange authorization code for access + refresh token
-    token_resp = requests.post("https://login.salesforce.com/services/oauth2/token", data={
+    token_resp = requests.post("https://skamalj-dev-ed.my.salesforce.com/services/oauth2/token", data={
         "grant_type": "authorization_code",
         "code": code,
         "client_id": os.environ["SF_CLIENT_ID"],
@@ -38,7 +38,7 @@ def lambda_handler(event, context):
 
     # Save tokens and instance info to DynamoDB
     table.put_item(Item={
-        "wa_id": wa_id,
+        "wa_id": profile_id,
         "access_token": token_data["access_token"],
         "refresh_token": token_data.get("refresh_token"),
         "instance_url": token_data["instance_url"],
