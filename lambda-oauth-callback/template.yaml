@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  DynamoTableName:
+    Type: String
+    Default: "salesforce_tokens"
+  SfClientIDSecretName:
+    Type: String
+    Default: "sf_client_id"
+    Description: "Name of the secret in AWS Secrets Manager"
+  SfClientSecretSecretName:
+    Type: String
+    Default: "sf_client_secret"
+    Description: "Name of the secret in AWS Secrets Manager"
+  SfCallbackURISecretName:
+    Type: String
+    Default: "sf_callback_uri"
+    Description: "Name of the secret in AWS Secrets Manager"
+
+Resources:
+  ProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app.lambda_handler
+      Runtime: python3.10
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          DYNAMODB_PROFILE_TABLE_NAME: !Ref DynamoTableName
+          SF_REDIRECT_URI: !Sub "{{resolve:secretsmanager:${SfCallbackURISecretName}}}"
+          SF_CLIENT_ID: !Sub "{{resolve:secretsmanager:${SfClientIDSecretName}}}"
+          SF_CLIENT_SECRET: !Sub "{{resolve:secretsmanager:${SfClientSecretSecretName}}}"
+      Events:
+        SfCallbackPost:
+          Type: Api
+          Properties:
+            Path: /callback
+            Method: post
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy: 
+            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SfClientIDSecretName}-*"
+        - AWSSecretsManagerGetSecretValuePolicy: 
+            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SfClientSecretSecretName}-*"
+        - AWSSecretsManagerGetSecretValuePolicy: 
+            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SfCallbackURISecretName}-*"
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoTableName
+
+Outputs:
+  SfCallbackAPI:
+    Description: "API Gateway endpoint URL for Prod stage for Callback Function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/callback/"
