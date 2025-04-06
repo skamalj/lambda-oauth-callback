@@ -1,0 +1,10 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "lambda-oauth-callback"
+resolve_s3 = true
+s3_prefix = "lambda-oauth-callback"
+region = "ap-south-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "DynamoTableName=\"salesforce_tokens\" SfClientIDSecretName=\"sf_client_id\" SfClientSecretSecretName=\"sf_client_secret\" SfCallbackURISecretName=\"sf_callback_uri\""
+image_repositories = []
