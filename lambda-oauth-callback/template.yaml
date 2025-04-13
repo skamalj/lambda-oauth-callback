@@ -33,6 +33,7 @@ Resources:
           SF_REDIRECT_URI: !Sub "{{resolve:secretsmanager:${SfCallbackURISecretName}}}"
           SF_CLIENT_ID: !Sub "{{resolve:secretsmanager:${SfClientIDSecretName}}}"
           SF_CLIENT_SECRET: !Sub "{{resolve:secretsmanager:${SfClientSecretSecretName}}}"
+          SF_URL: "https://velocity-ruby-3676.my.salesforce.com"
       Events:
         SfCallbackGet:
           Type: Api

@@ -4,6 +4,7 @@ import requests
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ["DYNAMODB_PROFILE_TABLE_NAME"])
+sf_url = dynamodb.Table(os.environ["SF_URL"])
 
 def lambda_handler(event, context):
     # Parse query parameters from Salesforce redirect
@@ -20,7 +21,7 @@ def lambda_handler(event, context):
     profile_id = state.replace("profile:", "")
 
     # Exchange authorization code for access + refresh token
-    token_resp = requests.post("https://skamalj-dev-ed.my.salesforce.com/services/oauth2/token", data={
+    token_resp = requests.post(f"{sf_url}/services/oauth2/token", data={
         "grant_type": "authorization_code",
         "code": code,
         "client_id": os.environ["SF_CLIENT_ID"],
