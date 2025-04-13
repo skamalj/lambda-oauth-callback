@@ -4,7 +4,7 @@ import requests
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ["DYNAMODB_PROFILE_TABLE_NAME"])
-sf_url = dynamodb.Table(os.environ["SF_URL"])
+sf_url = os.environ["SF_URL"]
 
 def lambda_handler(event, context):
     # Parse query parameters from Salesforce redirect
