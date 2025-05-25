@@ -5,17 +5,9 @@ Parameters:
   DynamoTableName:
     Type: String
     Default: "salesforce_tokens"
-  SfClientIDSecretName:
+  AgenticAppSecretName:
     Type: String
-    Default: "sf_client_id"
-    Description: "Name of the secret in AWS Secrets Manager"
-  SfClientSecretSecretName:
-    Type: String
-    Default: "sf_client_secret"
-    Description: "Name of the secret in AWS Secrets Manager"
-  SfCallbackURISecretName:
-    Type: String
-    Default: "sf_callback_uri"
+    Default: "agentic_app_secrets"
     Description: "Name of the secret in AWS Secrets Manager"
 
 Resources:
@@ -30,10 +22,11 @@ Resources:
       Environment:
         Variables:
           DYNAMODB_PROFILE_TABLE_NAME: !Ref DynamoTableName
-          SF_REDIRECT_URI: !Sub "{{resolve:secretsmanager:${SfCallbackURISecretName}}}"
-          SF_CLIENT_ID: !Sub "{{resolve:secretsmanager:${SfClientIDSecretName}}}"
-          SF_CLIENT_SECRET: !Sub "{{resolve:secretsmanager:${SfClientSecretSecretName}}}"
-          SF_URL: "https://velocity-ruby-3676.my.salesforce.com"
+          SF_REDIRECT_URI: !Sub "{{resolve:secretsmanager:${AgenticAppSecretName}:SecretString:SALESFORCE_REDIRECT_URI}}"
+          SF_CLIENT_ID: !Sub "{{resolve:secretsmanager:${AgenticAppSecretName}:SecretString:SALESFORCE_CLIENT_ID}}"
+          SF_CLIENT_SECRET: !Sub "{{resolve:secretsmanager:${AgenticAppSecretName}:SecretString:SALESFORCE_CLIENT_SECRET}}"
+          SF_URL: !Sub "https://{{resolve:secretsmanager:${AgenticAppSecretName}:SecretString:SALESFORCE_DOMAIN}}"    
+          LOG_LEVEL: "debug"  
       Events:
         SfCallbackGet:
           Type: Api
@@ -42,11 +35,7 @@ Resources:
             Method: get
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy: 
-            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SfClientIDSecretName}-*"
-        - AWSSecretsManagerGetSecretValuePolicy: 
-            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SfClientSecretSecretName}-*"
-        - AWSSecretsManagerGetSecretValuePolicy: 
-            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SfCallbackURISecretName}-*"
+            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${AgenticAppSecretName}-*"
         - DynamoDBCrudPolicy:
             TableName: !Ref DynamoTableName
 
